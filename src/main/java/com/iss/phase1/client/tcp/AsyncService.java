@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 @Component
 public class AsyncService {
 
@@ -50,17 +49,19 @@ public class AsyncService {
             }
             Document document;
             DocumentRequest documentRequest = (DocumentRequest) data.getObject();
+            documentRequest.decryptName();
 
             switch (documentRequest.getActionType()) {
                 case FETCH:
                     document = documentController.fetch((DocumentRequest) data.getObject());
                     applicationContext.getBean(AsyncService.class).send(connection, new TCPObject(TCPObjectType.DOCUMENT,
-                            new DocumentResponse(document.getName(), document.getContent())));
+                            new DocumentResponse(document.getName(), document.getContent()).encryptName().encryptContent()));
                     break;
                 case EDIT:
+                    documentRequest.decryptContent();
                     document = documentController.update((DocumentRequest) data.getObject());
                     applicationContext.getBean(AsyncService.class).send(connection, new TCPObject(TCPObjectType.DOCUMENT,
-                            new DocumentResponse(document.getName(), document.getContent())));
+                            new DocumentResponse(document.getName(), document.getContent()).encryptName().encryptContent()));
                     break;
             }
         }
