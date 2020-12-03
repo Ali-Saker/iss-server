@@ -2,6 +2,8 @@ package com.iss.phase1.client.tcp;
 
 import com.iss.phase1.client.entity.Document;
 import com.iss.phase1.client.entity.DocumentResponse;
+import com.iss.phase1.client.extra.AES;
+import com.iss.phase1.client.extra.RSA;
 import com.iss.phase1.controller.DocumentController;
 import com.iss.phase1.client.entity.DocumentRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PublicKey;
+
 @Component
 public class AsyncService {
 
@@ -29,6 +33,22 @@ public class AsyncService {
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
             TCPConnection tcpConnection = new TCPConnection(clientSocket, in, out);
+
+            RSA.init();
+            TCPObject tcpObject = tcpConnection.receive();
+            if(tcpObject.getType() == TCPObjectType.PUBLIC_KEY) {
+                tcpConnection.setServerPublicKey((PublicKey) tcpObject.getObject());
+            }
+
+            tcpConnection.send(new TCPObject(TCPObjectType.PUBLIC_KEY, RSA.getPublicKey()));
+
+            TCPObject tcpObjectSessionKey = tcpConnection.receive();
+            if(tcpObjectSessionKey.getType() == TCPObjectType.SESSION_KEY) {
+                byte [] encryptedSessionKey = (byte []) tcpObjectSessionKey.getObject();
+                AES.issSecretKey = new String(RSA.decrypt(encryptedSessionKey));
+            }
+
+
             applicationContext.getBean(AsyncService.class).acceptRequests(tcpConnection);
         } catch (IOException | ClassNotFoundException ex) {
             ex.printStackTrace();

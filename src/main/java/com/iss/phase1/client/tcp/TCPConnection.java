@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.PublicKey;
 
 public class TCPConnection {
 
     private Socket clientSocket;
     private ObjectInputStream input;
     private ObjectOutputStream out;
+    private PublicKey serverPublicKey;
 
 
     public TCPConnection(Socket clientSocket, ObjectInputStream input, ObjectOutputStream out) {
@@ -41,6 +43,14 @@ public class TCPConnection {
 
     public void setOut(ObjectOutputStream out) {
         this.out = out;
+    }
+
+    public PublicKey getServerPublicKey() {
+        return serverPublicKey;
+    }
+
+    public void setServerPublicKey(PublicKey serverPublicKey) {
+        this.serverPublicKey = serverPublicKey;
     }
 
     public void send(TCPObject data) throws IOException {
