@@ -37,7 +37,7 @@ public class AsyncService {
             RSA.init();
             TCPObject tcpObject = tcpConnection.receive();
             if(tcpObject.getType() == TCPObjectType.PUBLIC_KEY) {
-                tcpConnection.setServerPublicKey((PublicKey) tcpObject.getObject());
+                tcpConnection.setClientPublicKey((PublicKey) tcpObject.getObject());
             }
 
             tcpConnection.send(new TCPObject(TCPObjectType.PUBLIC_KEY, RSA.getPublicKey()));
@@ -69,19 +69,19 @@ public class AsyncService {
             }
             Document document;
             DocumentRequest documentRequest = (DocumentRequest) data.getObject();
-            documentRequest.decryptName();
+            documentRequest.verifyName(connection.getClientPublicKey());
 
             switch (documentRequest.getActionType()) {
                 case FETCH:
                     document = documentController.fetch((DocumentRequest) data.getObject());
                     applicationContext.getBean(AsyncService.class).send(connection, new TCPObject(TCPObjectType.DOCUMENT,
-                            new DocumentResponse(document.getName(), document.getContent()).encryptName().encryptContent()));
+                            new DocumentResponse(document.getName(), document.getContent()).signName().signContent()));
                     break;
                 case EDIT:
-                    documentRequest.decryptContent();
+                    documentRequest.verifyContent(connection.getClientPublicKey());
                     document = documentController.update((DocumentRequest) data.getObject());
                     applicationContext.getBean(AsyncService.class).send(connection, new TCPObject(TCPObjectType.DOCUMENT,
-                            new DocumentResponse(document.getName(), document.getContent()).encryptName().encryptContent()));
+                            new DocumentResponse(document.getName(), document.getContent()).signName().signContent()));
                     break;
             }
         }

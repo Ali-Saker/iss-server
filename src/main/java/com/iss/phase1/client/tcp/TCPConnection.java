@@ -12,7 +12,7 @@ public class TCPConnection {
     private Socket clientSocket;
     private ObjectInputStream input;
     private ObjectOutputStream out;
-    private PublicKey serverPublicKey;
+    private PublicKey clientPublicKey;
 
 
     public TCPConnection(Socket clientSocket, ObjectInputStream input, ObjectOutputStream out) {
@@ -45,12 +45,13 @@ public class TCPConnection {
         this.out = out;
     }
 
-    public PublicKey getServerPublicKey() {
-        return serverPublicKey;
+
+    public PublicKey getClientPublicKey() {
+        return clientPublicKey;
     }
 
-    public void setServerPublicKey(PublicKey serverPublicKey) {
-        this.serverPublicKey = serverPublicKey;
+    public void setClientPublicKey(PublicKey clientPublicKey) {
+        this.clientPublicKey = clientPublicKey;
     }
 
     public void send(TCPObject data) throws IOException {
