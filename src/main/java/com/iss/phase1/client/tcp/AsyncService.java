@@ -2,8 +2,7 @@ package com.iss.phase1.client.tcp;
 
 import com.iss.phase1.client.entity.Document;
 import com.iss.phase1.client.entity.DocumentResponse;
-import com.iss.phase1.client.extra.AES;
-import com.iss.phase1.client.extra.RSA;
+import com.iss.phase1.client.extra.DigitalSignature;
 import com.iss.phase1.controller.DocumentController;
 import com.iss.phase1.client.entity.DocumentRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,19 +33,12 @@ public class AsyncService {
 
             TCPConnection tcpConnection = new TCPConnection(clientSocket, in, out);
 
-            RSA.init();
             TCPObject tcpObject = tcpConnection.receive();
             if(tcpObject.getType() == TCPObjectType.PUBLIC_KEY) {
                 tcpConnection.setClientPublicKey((PublicKey) tcpObject.getObject());
             }
 
-            tcpConnection.send(new TCPObject(TCPObjectType.PUBLIC_KEY, RSA.getPublicKey()));
-
-            TCPObject tcpObjectSessionKey = tcpConnection.receive();
-            if(tcpObjectSessionKey.getType() == TCPObjectType.SESSION_KEY) {
-                byte [] encryptedSessionKey = (byte []) tcpObjectSessionKey.getObject();
-                AES.issSecretKey = new String(RSA.decrypt(encryptedSessionKey));
-            }
+            tcpConnection.send(new TCPObject(TCPObjectType.PUBLIC_KEY, DigitalSignature.getPublicKey()));
 
 
             applicationContext.getBean(AsyncService.class).acceptRequests(tcpConnection);
