@@ -6,19 +6,22 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 public class TCPConnection {
 
     private Socket clientSocket;
     private ObjectInputStream input;
     private ObjectOutputStream out;
-    private PublicKey clientPublicKey;
+    private X509Certificate serverCertificate;
+    private X509Certificate clientCertificate;
 
 
-    public TCPConnection(Socket clientSocket, ObjectInputStream input, ObjectOutputStream out) {
+    public TCPConnection(Socket clientSocket, ObjectInputStream input, ObjectOutputStream out, X509Certificate serverCertificate) {
         this.clientSocket = clientSocket;
         this.input = input;
         this.out = out;
+        this.serverCertificate = serverCertificate;
     }
 
     public Socket getClientSocket() {
@@ -45,14 +48,26 @@ public class TCPConnection {
         this.out = out;
     }
 
+    public X509Certificate getServerCertificate() {
+        return serverCertificate;
+    }
+
+    public void setServerCertificate(X509Certificate serverCertificate) {
+        this.serverCertificate = serverCertificate;
+    }
+
+    public X509Certificate getClientCertificate() {
+        return clientCertificate;
+    }
+
+    public void setClientCertificate(X509Certificate clientCertificate) {
+        this.clientCertificate = clientCertificate;
+    }
 
     public PublicKey getClientPublicKey() {
-        return clientPublicKey;
+        return clientCertificate.getPublicKey();
     }
 
-    public void setClientPublicKey(PublicKey clientPublicKey) {
-        this.clientPublicKey = clientPublicKey;
-    }
 
     public void send(TCPObject data) throws IOException {
         out.writeObject(data);
@@ -61,5 +76,15 @@ public class TCPConnection {
 
     public TCPObject receive() throws IOException, ClassNotFoundException {
         return (TCPObject) input.readObject();
+    }
+
+    public boolean hasReadPermission(String docName) {
+        String readSection = this.clientCertificate.getSubjectDN().getName().split(";")[1];
+        return readSection.contains(docName);
+    }
+
+    public boolean hasEditPermission(String docName) {
+        String editSection = this.clientCertificate.getSubjectDN().getName().split(";")[2];
+        return editSection.contains(docName);
     }
 }

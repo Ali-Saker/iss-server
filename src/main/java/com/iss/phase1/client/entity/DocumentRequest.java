@@ -5,6 +5,7 @@ import com.iss.phase1.client.extra.DigitalSignature;
 
 import java.io.Serializable;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 public class DocumentRequest implements Serializable {
 
@@ -17,7 +18,10 @@ public class DocumentRequest implements Serializable {
     private String updatedContent;
 
     private byte [] signedDocumentName;
+
     private byte [] signedUpdatedContent;
+
+    private X509Certificate clientCertificate;
 
     public String getDocumentName() {
         return documentName;
@@ -41,6 +45,14 @@ public class DocumentRequest implements Serializable {
 
     public void setUpdatedContent(String updatedContent) {
         this.updatedContent = updatedContent;
+    }
+
+    public X509Certificate getClientCertificate() {
+        return clientCertificate;
+    }
+
+    public void setClientCertificate(X509Certificate clientCertificate) {
+        this.clientCertificate = clientCertificate;
     }
 
     public DocumentRequest signName() {

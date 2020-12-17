@@ -4,6 +4,7 @@ import com.iss.phase1.client.extra.DigitalSignature;
 
 import java.io.Serializable;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 public class DocumentResponse implements Serializable {
 
@@ -16,6 +17,7 @@ public class DocumentResponse implements Serializable {
     private byte [] signedName;
 
     private byte [] signedContent;
+
 
     public DocumentResponse(String name, String content) {
         this.name = name;
